@@ -117,7 +117,7 @@ __pycache__/
 # C extensions
 *.so
 
-data/
+src/data/
 .idea/
 
 # Distribution / packaging
@@ -226,3 +226,11 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+
+
+
+
+
+.idea/*
+test_one_week
