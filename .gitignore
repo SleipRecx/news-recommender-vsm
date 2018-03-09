@@ -117,7 +117,7 @@ __pycache__/
 # C extensions
 *.so
 
-data/
+src/data/
 .idea/
 
 # Distribution / packaging
