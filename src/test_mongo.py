@@ -4,6 +4,9 @@
 import json
 import pymongo
 from pprint import pprint
+
+from bson import SON
+from collections import defaultdict
 from pymongo import MongoClient
 
 
@@ -20,4 +23,13 @@ print("Number of articles:", articles.count())
 
 print("Number of users:", user_profiles.count())
 
-print("User with most reads:", user_profiles.find().sort([("", pymongo.ASCENDING)]).next())
+# Find information for one users events
+events = user_profiles.find_one({"_id": "cx:2fs9x8i7jvcjyckoxqfa6l4lw:3rr1gvpcbzx8w"})["events"]
+
+article_profile_items = defaultdict(int)
+
+for event in events:
+    for profile in articles.find_one({"_id": event["articleId"]})["profiles"]:
+        article_profile_items[(profile["item"])] += 1
+
+pprint(article_profile_items)

@@ -16,14 +16,14 @@ db = client["adressa-articles"]
 articles = db.articles
 user_profiles = db.user_profiles
 
-# with open("articles.json") as file:
-#     json = json.loads(file.read())
-#     print(len(json))
-#     articles.insert_many(json)
-#     print("Done inserting")
+with open("articles.json") as file:
+    json = json.loads(file.read())
+    print(len(json))
+    articles.insert_many(json)
+    print("Done inserting")
 
-# with open("users.json") as file:
-#     json = json.loads(file.read())
-#     print(len(json))
-#     user_profiles.insert_many(json)
-#     print("Done inserting")
+with open("users.json") as file:
+    json = json.loads(file.read())
+    print(len(json))
+    user_profiles.insert_many(json)
+    print("Done inserting")

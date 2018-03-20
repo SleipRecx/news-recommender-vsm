@@ -91,4 +91,4 @@ def save_clean_one_week_users(filename: str):
 
 if __name__ == '__main__':
     save_clean_one_week_articles("articles")
-    save_clean_one_week_users("users")
+    # save_clean_one_week_users("users")

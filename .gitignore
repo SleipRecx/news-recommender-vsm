@@ -1,6 +1,9 @@
 
 # Created by https://www.gitignore.io/api/linux,macos,python,pycharm
 
+src/articles.json
+src/users.json
+
 data/
 ### Linux ###
 *~
