@@ -10,10 +10,10 @@ from collections import defaultdict
 from pymongo import MongoClient
 
 
-client = MongoClient("mongodb://admin:gutta123@138.68.107.82:27017")
+client = MongoClient("mongodb://Gsfbretsd:5erfFSTYUfnd@167.99.45.145/adressa_ofc")
 # client = MongoClient("mongodb://gutta:gutta@ds261088.mlab.com:61088/adressa-articles")
 
-db = client["adressa-articles"]
+db = client["adressa_ofc"]
 print("Connected")
 
 articles = db.articles
