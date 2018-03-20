@@ -1,71 +1,81 @@
-# Project: web-intelligens
-# Created: 09.03.18 13:41
-# Owner: Espen Meidell
-
-
 from pprint import pprint
-from collections import defaultdict
+from typing import Tuple, Dict
 from pymongo import MongoClient
 from gensim.corpora import Dictionary
-from gensim.models import TfidfModel, LsiModel
+from gensim.models import TfidfModel
 from gensim.similarities import MatrixSimilarity
 
-client = MongoClient("mongodb://Gsfbretsd:5erfFSTYUfnd@167.99.45.145/adressa_ofc")
-db = client["adressa_ofc"]
-print("Connected")
 
-articles = db.articles
-user_profiles = db.user_profiles
-
-print("Number of articles:", articles.count())
-print("Number of users:", user_profiles.count())
+def mongo_connect(host, username, password, db_name):
+    return MongoClient("mongodb://" + username + ':' + password + '@' + host + '/' + db_name)[db_name]
 
 
-# # Find information for one users events
-# events = user_profiles.find_one({"_id": "cx:2fs9x8i7jvcjyckoxqfa6l4lw:3rr1gvpcbzx8w"})["events"]
-#
-# article_profile_items = defaultdict(int)
-#
-# for event in events:
-#     for profile in articles.find_one({"_id": event["articleId"]})["profiles"]:
-#         article_profile_items[(profile["item"])] += 1
-#
-# pprint(article_profile_items)
+def create_article_profiles(db) -> Tuple[list, Dict]:
+    index_article_map = {}
+    current_index = 0
+    profiles = []
+    for article in db.articles.find():
+        keyword = []
+        index_article_map[current_index] = article["_id"]
+        for profile in article["profiles"]:
+            keyword.append(profile["item"])
+        profiles.append(keyword)
+        current_index += 1
+    return profiles, index_article_map
 
 
-counter = 0
-profiles = []
-article_map = {}
-
-for article in articles.find():
-    keyword = []
-    article_map[counter] = article["_id"]
-    for profile in article["profiles"]:
-        keyword.append(profile["item"])
-    profiles.append(keyword)
-    counter += 1
-
-print("keywords made")
-dictionary = Dictionary(profiles)
-print("created dict")
-corpus = list(map(lambda doc: dictionary.doc2bow(doc), profiles))
-print("created corpus")
-tfidf_model = TfidfModel(corpus)
-print("created model")
-tfidf_corpus = list(map(lambda c: tfidf_model[c], corpus))
-print("created corpus2")
-tfidf_similarity = MatrixSimilarity(tfidf_corpus)
-print("gg wp")
-
-query_corpus = dictionary.doc2bow(['ol', 'vm', "langrenn"])
-
-query_tfidf = tfidf_model[query_corpus]
-
-similarity = enumerate(tfidf_similarity[query_tfidf])
-
-query_result = sorted(similarity, key=lambda kv: -kv[1])[:5]
+def generate_user_profiles(db):
+    result = []
+    interactions = db.user_profiles.find()
+    for i in range(10):
+        interaction = interactions.next()
+        visited_articles = list(map(lambda event: event["articleId"], interaction["events"]))
+        profiles = []
+        for article_id in visited_articles:
+            article = db.articles.find_one({"_id": article_id})
+            for profile in article["profiles"]:
+                profiles.append(profile["item"])
+        result.append(profiles)
+    return result
 
 
-results = list(map(lambda result: article_map[result[0]], query_result))
-for result in results:
-    pprint(articles.find_one({"_id": result})["title"])
+if __name__ == '__main__':
+    host = "167.99.45.145"
+    username = "Gsfbretsd"
+    password = "5erfFSTYUfnd"
+    db_name = "adressa_ofc"
+    db = mongo_connect(host, username, password, db_name)
+    print("Connected")
+
+    profiles, index_article_map = create_article_profiles(db)
+    dictionary = Dictionary(profiles)
+    corpus = list(map(lambda doc: dictionary.doc2bow(doc), profiles))
+    tfidf_model = TfidfModel(corpus)
+    tfidf_corpus = list(map(lambda c: tfidf_model[c], corpus))
+    tfidf_similarity = MatrixSimilarity(tfidf_corpus)
+    print("Model built")
+
+    queries = generate_user_profiles(db)
+    for query in queries:
+        query_corpus = dictionary.doc2bow(query)
+        query_tfidf = tfidf_model[query_corpus]
+        similarity = enumerate(tfidf_similarity[query_tfidf])
+        query_result = sorted(similarity, key=lambda kv: -kv[1])[:30]
+        results = list(map(lambda result: index_article_map[result[0]], query_result))
+        for result in results:
+            pprint(db.articles.find_one({"_id": result})["title"])
+        print("------------------------")
+
+    while True:
+        query = input("Query: ")
+        query_corpus = dictionary.doc2bow(query.split())
+        query_tfidf = tfidf_model[query_corpus]
+
+        similarity = enumerate(tfidf_similarity[query_tfidf])
+
+        query_result = sorted(similarity, key=lambda kv: -kv[1])[:5]
+
+        results = list(map(lambda result: index_article_map[result[0]], query_result))
+
+        for result in results:
+            pprint(db.articles.find_one({"_id": result})["title"])
