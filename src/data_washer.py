@@ -1,5 +1,4 @@
 import json
-from collections import defaultdict
 from typing import Dict
 
 
@@ -78,7 +77,7 @@ def save_clean_one_week_articles(filename: str):
     for i in range(1, 8):
         print("Reading file:", i)
         create_article_dict('../data/2017010' + str(i), output)
-    save_dict_as_json('articles', output)
+    save_dict_as_json(filename, output)
 
 
 def save_clean_one_week_users(filename: str):
@@ -86,7 +85,7 @@ def save_clean_one_week_users(filename: str):
     for i in range(1, 8):
         print("Reading file:", i)
         create_user_dict('../data/2017010' + str(i), output)
-    save_dict_as_json('articles', output)
+    save_dict_as_json(filename, output)
 
 
 if __name__ == '__main__':

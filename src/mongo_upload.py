@@ -1,6 +1,3 @@
-# Project: web-intelligens
-# Created: 09.03.18 13:41
-# Owner: Espen Meidell
 import json
 import pymongo
 from pymongo import MongoClient
