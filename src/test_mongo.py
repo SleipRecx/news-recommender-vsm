@@ -4,6 +4,7 @@
 import json
 import pymongo
 from pprint import pprint
+import math
 
 from bson import SON
 from collections import defaultdict
@@ -23,13 +24,24 @@ print("Number of articles:", articles.count())
 
 print("Number of users:", user_profiles.count())
 
-# Find information for one users events
-events = user_profiles.find_one({"_id": "cx:2fs9x8i7jvcjyckoxqfa6l4lw:3rr1gvpcbzx8w"})["events"]
+# # Find information for one users events
+# events = user_profiles.find_one({"_id": "cx:2fs9x8i7jvcjyckoxqfa6l4lw:3rr1gvpcbzx8w"})["events"]
+#
+# article_profile_items = defaultdict(int)
+#
+# for event in events:
+#     for profile in articles.find_one({"_id": event["articleId"]})["profiles"]:
+#         article_profile_items[(profile["item"])] += 1
+#
+# pprint(article_profile_items)
 
-article_profile_items = defaultdict(int)
+countInCollection = defaultdict(int)
+idf = {}
+for article in articles.find():
+    for profile in article["profiles"]:
+        countInCollection[(profile["item"])] += 1
 
-for event in events:
-    for profile in articles.find_one({"_id": event["articleId"]})["profiles"]:
-        article_profile_items[(profile["item"])] += 1
+N = articles.count()
+for key in countInCollection:
+    idf[key] = math.log2(N / countInCollection[key])
 
-pprint(article_profile_items)
