@@ -12,6 +12,8 @@ print(client.server_info())
 db = client["adressa_ofc"]
 articles = db.articles
 user_profiles = db.user_profiles
+test_articles = db.test_articles
+test_user_profiles = db.test_user_profiles
 
 # with open("articles.json") as file:
 #     json = json.loads(file.read())
@@ -23,4 +25,18 @@ user_profiles = db.user_profiles
 #     json = json.loads(file.read())
 #     print(len(json))
 #     user_profiles.insert_many(json)
+#     print("Done inserting")
+
+
+# with open("test_users.json") as file:
+#     json = json.loads(file.read())
+#     print(len(json))
+#     test_user_profiles.insert_many(json)
+#     print("Done inserting")
+
+
+# with open("test_articles.json") as file:
+#     json = json.loads(file.read())
+#     print(len(json))
+#     test_articles.insert_many(json)
 #     print("Done inserting")
