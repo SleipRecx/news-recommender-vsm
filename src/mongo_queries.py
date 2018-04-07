@@ -1,12 +1,14 @@
 from typing import Tuple, Dict
 from pymongo import MongoClient
 
+host = "167.99.45.145"
+username = "Gsfbretsd"
+password = "5erfFSTYUfnd"
+db_name = "adressa_ofc"
+db = MongoClient("mongodb://" + username + ':' + password + '@' + host + '/' + db_name)[db_name]
 
-def mongo_connect(host, username, password, db_name):
-    return MongoClient("mongodb://" + username + ':' + password + '@' + host + '/' + db_name)[db_name]
 
-
-def create_article_profiles(db) -> Tuple[list, Dict]:
+def create_article_profiles() -> Tuple[list, Dict]:
     index_article_map = {}
     current_index = 0
     profiles = []
@@ -31,7 +33,7 @@ def create_user_profile(user_id) -> list:
     return profiles
 
 
-def generate_user_profiles(db) -> Tuple[list, dict]:
+def generate_user_profiles() -> Tuple[list, dict]:
     user_index_map = {}
     result = []
     interactions = db.user_profiles.find()
@@ -45,3 +47,4 @@ def generate_user_profiles(db) -> Tuple[list, dict]:
                 profiles.append(profile["item"])
         result.append(profiles)
     return result, user_index_map
+
