@@ -87,7 +87,15 @@ def save_clean_one_week_users(filename: str):
         create_user_dict('../data/2017010' + str(i), output)
     save_dict_as_json(filename, output)
 
+def save_clean_test_data():
+    user_out = {}
+    create_user_dict('../data/test/test_one_week/data', user_out)
+    save_dict_as_json("test_users", user_out)
+    article_out = {}
+    create_article_dict("../data/test/test_one_week/data", article_out)
+    save_dict_as_json("test_articles", article_out)
 
 if __name__ == '__main__':
-    save_clean_one_week_articles("articles")
+    # save_clean_one_week_articles("articles")
     # save_clean_one_week_users("users")
+    save_clean_test_data()
