@@ -7,13 +7,39 @@ if __name__ == '__main__':
     model_path = os.getcwd() + '/model'
 
     model = VectorSpaceModel()
-    # profiles, index_article_map = create_article_profiles(db)
+    # profiles, index_article_map = create_article_profiles()
     # model.build(profiles, profile_index_map=index_article_map)
     # model.save(path=model_path)
 
-    user_profile = create_user_profile(db.user_profiles.find_one()["_id"])
+    user_profile_iterator = db.test_user_profiles.find()
+    user_profile_iterator.next()
+    user_profile_iterator.next()
+    user_profile_iterator.next()
+
+    current_user = user_profile_iterator.next()["_id"]
+
+    user_profile = create_user_profile(current_user)
+    read = db.user_profiles.find_one()["events"]
+    read_ids = list(map(lambda x: x['articleId'], read))
+
+    print("Train")
+    for id in read_ids:
+        pprint(db.articles.find_one({"_id": id})['title'])
+    print()
+
+    test_read = db.test_user_profiles.find_one({"_id": current_user})["events"]
+    test_read_ids = list(map(lambda x: x['articleId'], test_read))
+
+    print("Test")
+    for id in test_read_ids:
+        pprint(db.articles.find_one({"_id": id})['title'])
+    print()
+
     model.load(path=model_path)
     query = ['sport', 'fotball', 'mål']
-    results = model.query(query=user_profile, n_results=100)
-    for result in results:
-        pprint(db.articles.find_one({"_id": result})['title'])
+    results = model.query(query=user_profile, n_results=10)
+    results = list(filter(lambda x: x not in read_ids, results))
+    for i, result in enumerate(results):
+        print(i, ":", db.articles.find_one({"_id": result})['title'])
+
+
