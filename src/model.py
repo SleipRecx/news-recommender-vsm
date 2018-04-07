@@ -1,4 +1,3 @@
-from typing import Dict
 from gensim.corpora import Dictionary
 from gensim.models import TfidfModel
 from gensim.similarities import MatrixSimilarity
@@ -11,7 +10,7 @@ class VectorSpaceModel:
         self.tfidf_model = None
         self.profile_index_map = None
 
-    def build(self, profiles: list, profile_index_map: Dict):
+    def build(self, profiles: list):
         self.dictionary = Dictionary(profiles)
         corpus = list(map(lambda doc: self.dictionary.doc2bow(doc), profiles))
         self.tfidf_model = TfidfModel(corpus)

@@ -13,16 +13,15 @@ if __name__ == '__main__':
     model_path = os.getcwd() + '/model'
 
     model = VectorSpaceModel()
-    # model.load(path=model_path)
-    profiles, index_article_map = create_article_profiles()
-    model.build(profiles, profile_index_map=index_article_map)
-    model.save(path=model_path)
+    model.load(path=model_path)
+    # profiles = create_article_profiles()
+    # model.build(profiles)
+    # model.save(path=model_path)
 
     user_profile_iterator = db.test_user_profiles.find()
 
-    user_profile_iterator.next()
-    user_profile_iterator.next()
-    user_profile_iterator.next()
+    for i in range(0):
+        user_profile_iterator.next()
 
     current_user = user_profile_iterator.next()["_id"]
 
