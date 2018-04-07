@@ -5,6 +5,7 @@ src/articles.json
 src/users.json
 
 data/
+model/
 ### Linux ###
 *~
 
