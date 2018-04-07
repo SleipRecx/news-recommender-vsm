@@ -3,15 +3,23 @@ from model import VectorSpaceModel
 from mongo_queries import create_article_profiles, create_user_profile, db
 import os
 
+
+def get_articles_from_query_result(result):
+    articles = list(map(lambda x: list(db.articles.find().limit(1).skip(x))[0], result))
+    return articles
+
+
 if __name__ == '__main__':
     model_path = os.getcwd() + '/model'
 
     model = VectorSpaceModel()
-    # profiles, index_article_map = create_article_profiles()
-    # model.build(profiles, profile_index_map=index_article_map)
-    # model.save(path=model_path)
+    # model.load(path=model_path)
+    profiles, index_article_map = create_article_profiles()
+    model.build(profiles, profile_index_map=index_article_map)
+    model.save(path=model_path)
 
     user_profile_iterator = db.test_user_profiles.find()
+
     user_profile_iterator.next()
     user_profile_iterator.next()
     user_profile_iterator.next()
@@ -35,11 +43,7 @@ if __name__ == '__main__':
         pprint(db.articles.find_one({"_id": id})['title'])
     print()
 
-    model.load(path=model_path)
-    query = ['sport', 'fotball', 'mål']
     results = model.query(query=user_profile, n_results=10)
     results = list(filter(lambda x: x not in read_ids, results))
-    for i, result in enumerate(results):
-        print(i, ":", db.articles.find_one({"_id": result})['title'])
-
-
+    articles = get_articles_from_query_result(results)
+    pprint(list(map(lambda x: x['title'], articles)))
