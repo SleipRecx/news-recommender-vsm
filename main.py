@@ -49,13 +49,13 @@ if __name__ == '__main__':
         # print()
 
         start = time.time()
-        results = model.query(query=user_profile, n_results=10)
+        results = model.query(query=user_profile, n_results=30)
         results = list(filter(lambda x: x not in read_ids, results))  # filters out already read articles
         articles = get_articles_from_query_result(results)
         recommended_ids = list(map(lambda x: x['_id'], articles))
         # pprint(list(map(lambda x: x['title'], articles)))
-
-        for x in range(10, 0, -1):
+        print(i)
+        for x in range(1, 31):
             rec2 = recommended_ids[:x]
             true_positives = len(set(rec2).intersection(set(test_read_ids)))
             false_positives = len(rec2) - true_positives
@@ -63,7 +63,6 @@ if __name__ == '__main__':
 
             precision = true_positives / (true_positives + false_positives)
             recall = true_positives / (true_positives + false_negatives)
-
 
             recall_map[x] += recall
             precision_map[x] += precision
@@ -74,12 +73,15 @@ if __name__ == '__main__':
             # average_precision += precision
             # average_recall += recall
 
-    for key in range(1, 11):
+    for key in range(1, 31):
         precision_map[key] /= n_predictions
         recall_map[key] /= n_predictions
+        print()
+        print(key, "Precision:", precision_map[key])
+        print(key, "Recall:", recall_map[key])
         print(key, "F-Measure:", 2 * (precision_map[key] * recall_map[key] / (precision_map[key] + recall_map[key])))
 
-    # f_measure = 2 * (average_precision * average_recall / (average_precision + average_recall))
-    # print('Average Precision:', average_precision * 100, '%')
-    # print('Average Recall:', average_recall * 100, '%')
-    # print('F-Measure:', f_measure)
+        # f_measure = 2 * (average_precision * average_recall / (average_precision + average_recall))
+        # print('Average Precision:', average_precision * 100, '%')
+        # print('Average Recall:', average_recall * 100, '%')
+        # print('F-Measure:', f_measure)
