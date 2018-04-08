@@ -1,6 +1,6 @@
 from pprint import pprint
-from model import VectorSpaceModel
-from mongo_queries import create_article_profiles, create_user_profile, db
+from src.model import VectorSpaceModel
+from src.mongo_queries import create_article_profiles, create_user_profile, db
 from collections import defaultdict
 import os
 import time
@@ -23,12 +23,16 @@ if __name__ == '__main__':
     print("Building time:", time.time() - start)
 
     user_profile_iterator = db.test_user_profiles.find()
-    average_precision = 1
-    average_recall = 1
-    recall_map = defaultdict(int)
-    precision_map = defaultdict(int)
+    n_test_articles = db.test_articles.find().count()
 
-    n_predictions = 30
+    recall_list = []
+    precision_list = []
+    fpr_list = []
+
+    average_recall = 0
+    average_precision = 0
+
+    n_predictions = 1000
     for i in range(n_predictions):
         current_user = user_profile_iterator.next()["_id"]
         user_profile = create_user_profile(current_user)
@@ -49,40 +53,33 @@ if __name__ == '__main__':
         # print()
 
         start = time.time()
-        results = model.query(query=user_profile, n_results=30)
+        results = model.query(query=user_profile, n_results=3)
         results = list(filter(lambda x: x not in read_ids, results))  # filters out already read articles
         articles = get_articles_from_query_result(results)
         recommended_ids = list(map(lambda x: x['_id'], articles))
         # pprint(list(map(lambda x: x['title'], articles)))
-        print(i)
-        for x in range(1, 31):
-            rec2 = recommended_ids[:x]
-            true_positives = len(set(rec2).intersection(set(test_read_ids)))
-            false_positives = len(rec2) - true_positives
-            false_negatives = len(test_read_ids) - true_positives
+        print("User:", i + 1)
 
-            precision = true_positives / (true_positives + false_positives)
-            recall = true_positives / (true_positives + false_negatives)
+        true_positives = len(set(recommended_ids).intersection(set(test_read_ids)))
+        false_positives = len(recommended_ids) - true_positives
+        false_negatives = len(test_read_ids) - true_positives
+        true_negatives = n_test_articles - (false_negatives + true_positives) - false_positives
 
-            recall_map[x] += recall
-            precision_map[x] += precision
+        false_positives_rate = false_positives / (false_positives + true_negatives)
+        precision = true_positives / (true_positives + false_positives)
+        recall = true_positives / (true_positives + false_negatives)
 
-            # print()
-            # print('Precision:', precision * 100, '%')
-            # print('Recall:', recall * 100, '%')
-            # average_precision += precision
-            # average_recall += recall
+        recall_list.append(recall)
+        precision_list.append(precision)
+        fpr_list.append(false_positives_rate)
 
-    for key in range(1, 31):
-        precision_map[key] /= n_predictions
-        recall_map[key] /= n_predictions
-        print(key, "Precision:", precision_map[key])
-    for key in range(1, 31):
-        print(key, "Recall:", recall_map[key])
-    for key in range(1, 31):
-        print(key, "F-Measure:", 2 * (precision_map[key] * recall_map[key] / (precision_map[key] + recall_map[key])))
+    average_precision = sum(precision_list) / len(precision_list)
+    average_recall = sum(recall_list) / len(recall_list)
 
-        # f_measure = 2 * (average_precision * average_recall / (average_precision + average_recall))
-        # print('Average Precision:', average_precision * 100, '%')
-        # print('Average Recall:', average_recall * 100, '%')
-        # print('F-Measure:', f_measure)
+    print("Precision:", average_precision)
+    print("Recall:", average_recall)
+    print("F-Measure:", 2 * (average_precision * average_recall / (average_precision + average_recall)))
+    print("fpr")
+    pprint(fpr_list)
+    print("recall")
+    pprint(recall_list)
