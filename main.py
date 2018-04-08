@@ -76,9 +76,10 @@ if __name__ == '__main__':
     for key in range(1, 31):
         precision_map[key] /= n_predictions
         recall_map[key] /= n_predictions
-        print()
         print(key, "Precision:", precision_map[key])
+    for key in range(1, 31):
         print(key, "Recall:", recall_map[key])
+    for key in range(1, 31):
         print(key, "F-Measure:", 2 * (precision_map[key] * recall_map[key] / (precision_map[key] + recall_map[key])))
 
         # f_measure = 2 * (average_precision * average_recall / (average_precision + average_recall))
