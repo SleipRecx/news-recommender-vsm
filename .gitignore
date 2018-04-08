@@ -3,8 +3,11 @@
 
 src/articles.json
 src/users.json
-
+src/test_articles.json
+src/test_users.json
+read_times.json
 data/
+model/
 ### Linux ###
 *~
 
