@@ -1,7 +1,6 @@
 from pprint import pprint
-from src.model import VectorSpaceModel
-from src.mongo_queries import create_article_profiles, create_user_profile, db
-from collections import defaultdict
+from model import VectorSpaceModel
+from mongo_queries import create_article_profiles, create_user_profile, db
 import os
 import time
 
@@ -27,12 +26,9 @@ if __name__ == '__main__':
 
     recall_list = []
     precision_list = []
-    fpr_list = []
+    arhr_list = []
 
-    average_recall = 0
-    average_precision = 0
-
-    n_predictions = 1000
+    n_predictions = 3
     for i in range(n_predictions):
         current_user = user_profile_iterator.next()["_id"]
         user_profile = create_user_profile(current_user)
@@ -53,7 +49,7 @@ if __name__ == '__main__':
         # print()
 
         start = time.time()
-        results = model.query(query=user_profile, n_results=3)
+        results = model.query(query=user_profile, n_results=10)
         results = list(filter(lambda x: x not in read_ids, results))  # filters out already read articles
         articles = get_articles_from_query_result(results)
         recommended_ids = list(map(lambda x: x['_id'], articles))
@@ -68,18 +64,26 @@ if __name__ == '__main__':
         false_positives_rate = false_positives / (false_positives + true_negatives)
         precision = true_positives / (true_positives + false_positives)
         recall = true_positives / (true_positives + false_negatives)
+        arhr = sum(
+            list(map(lambda x: 0 if x not in recommended_ids else 1 / (recommended_ids.index(x) + 1), test_read_ids)))
+
+        sp = true_positives
+        np = len(test_read_ids)
+        nn = n_test_articles - np
+        AUC = (sp - np * (nn + 1) / 2) / (np * nn)
+        print("AUC:", AUC)
+
 
         recall_list.append(recall)
         precision_list.append(precision)
-        fpr_list.append(false_positives_rate)
+        arhr_list.append(arhr)
 
-    average_precision = sum(precision_list) / len(precision_list)
-    average_recall = sum(recall_list) / len(recall_list)
+    global_precision = sum(precision_list) / len(precision_list)
+    global_recall = sum(recall_list) / len(recall_list)
+    global_f_measure = 2 * (global_precision * global_recall / (global_precision + global_recall))
+    global_arhr = sum(arhr_list) / len(arhr_list)
 
-    print("Precision:", average_precision)
-    print("Recall:", average_recall)
-    print("F-Measure:", 2 * (average_precision * average_recall / (average_precision + average_recall)))
-    print("fpr")
-    pprint(fpr_list)
-    print("recall")
-    pprint(recall_list)
+    print("Global Precision:", global_precision)
+    print("Global Recall:", global_recall)
+    print("Global F-Measure:", global_f_measure)
+    print("Global ARHR:", global_arhr)
