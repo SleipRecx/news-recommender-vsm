@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 
-host = "167.99.45.145"
+host = "174.138.13.47"
 username = "Gsfbretsd"
 password = "5erfFSTYUfnd"
 db_name = "adressa_ofc"

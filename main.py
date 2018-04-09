@@ -1,7 +1,6 @@
 from pprint import pprint
 from model import VectorSpaceModel
 from mongo_queries import create_article_profiles, create_user_profile, db
-from collections import defaultdict
 import os
 import time
 
@@ -23,12 +22,13 @@ if __name__ == '__main__':
     print("Building time:", time.time() - start)
 
     user_profile_iterator = db.test_user_profiles.find()
-    average_precision = 1
-    average_recall = 1
-    recall_map = defaultdict(int)
-    precision_map = defaultdict(int)
+    n_test_articles = db.test_articles.find().count()
 
-    n_predictions = 30
+    recall_list = []
+    precision_list = []
+    arhr_list = []
+
+    n_predictions = 3
     for i in range(n_predictions):
         current_user = user_profile_iterator.next()["_id"]
         user_profile = create_user_profile(current_user)
@@ -54,32 +54,36 @@ if __name__ == '__main__':
         articles = get_articles_from_query_result(results)
         recommended_ids = list(map(lambda x: x['_id'], articles))
         # pprint(list(map(lambda x: x['title'], articles)))
+        print("User:", i + 1)
 
-        for x in range(10, 0, -1):
-            rec2 = recommended_ids[:x]
-            true_positives = len(set(rec2).intersection(set(test_read_ids)))
-            false_positives = len(rec2) - true_positives
-            false_negatives = len(test_read_ids) - true_positives
+        true_positives = len(set(recommended_ids).intersection(set(test_read_ids)))
+        false_positives = len(recommended_ids) - true_positives
+        false_negatives = len(test_read_ids) - true_positives
+        true_negatives = n_test_articles - (false_negatives + true_positives) - false_positives
 
-            precision = true_positives / (true_positives + false_positives)
-            recall = true_positives / (true_positives + false_negatives)
+        false_positives_rate = false_positives / (false_positives + true_negatives)
+        precision = true_positives / (true_positives + false_positives)
+        recall = true_positives / (true_positives + false_negatives)
+        arhr = sum(
+            list(map(lambda x: 0 if x not in recommended_ids else 1 / (recommended_ids.index(x) + 1), test_read_ids)))
+
+        sp = true_positives
+        np = len(test_read_ids)
+        nn = n_test_articles - np
+        AUC = (sp - np * (nn + 1) / 2) / (np * nn)
+        print("AUC:", AUC)
 
 
-            recall_map[x] += recall
-            precision_map[x] += precision
+        recall_list.append(recall)
+        precision_list.append(precision)
+        arhr_list.append(arhr)
 
-            # print()
-            # print('Precision:', precision * 100, '%')
-            # print('Recall:', recall * 100, '%')
-            # average_precision += precision
-            # average_recall += recall
+    global_precision = sum(precision_list) / len(precision_list)
+    global_recall = sum(recall_list) / len(recall_list)
+    global_f_measure = 2 * (global_precision * global_recall / (global_precision + global_recall))
+    global_arhr = sum(arhr_list) / len(arhr_list)
 
-    for key in range(1, 11):
-        precision_map[key] /= n_predictions
-        recall_map[key] /= n_predictions
-        print(key, "F-Measure:", 2 * (precision_map[key] * recall_map[key] / (precision_map[key] + recall_map[key])))
-
-    # f_measure = 2 * (average_precision * average_recall / (average_precision + average_recall))
-    # print('Average Precision:', average_precision * 100, '%')
-    # print('Average Recall:', average_recall * 100, '%')
-    # print('F-Measure:', f_measure)
+    print("Global Precision:", global_precision)
+    print("Global Recall:", global_recall)
+    print("Global F-Measure:", global_f_measure)
+    print("Global ARHR:", global_arhr)
