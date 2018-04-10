@@ -1,6 +1,6 @@
 from pprint import pprint
 from model import VectorSpaceModel
-from mongo_queries import db, create_user_profile
+from mongo_queries import db, create_user_profile, get_n_most_popular
 import time
 import os
 
@@ -24,7 +24,7 @@ if __name__ == '__main__':
     user_profile_iterator = db.test_user_profiles.find()
 
     while True:
-        input("")
+        input("Continue...")
         print()
         current_user = user_profile_iterator.next()["_id"]
         user_json = db.user_profiles.find_one({"_id": current_user})
@@ -51,24 +51,31 @@ if __name__ == '__main__':
             pprint(db.articles.find_one({"_id": read_id})['title'])
         print()
 
-        n_articles_2_rec = input("How many articles to recommend?")
+        n_articles_2_rec = input("How many articles to recommend? ")
 
         query_results = model.query(query=user_profile, threshold=0.25)
         results = list(map(lambda x: x[0], query_results))
         results = list(filter(lambda x: x not in read_ids, results))  # filters out already read articles
         articles = get_articles_from_query_result(results)
 
-        if n_articles_2_rec != 'n':
+        if n_articles_2_rec != 'n' and n_articles_2_rec != 'N':
             if len(articles) > int(n_articles_2_rec):
-                articles = articles[:n_articles_2_rec]
+                articles = articles[:int(n_articles_2_rec)]
             if len(articles) < int(n_articles_2_rec):
-                pass
+                n_missing = int(n_articles_2_rec) - len(articles) + len(read_ids)
+                most_popular = get_n_most_popular(n_missing)
+                tmp_recommended_ids = list(map(lambda x: x['_id'], articles))
+                for popular_article in most_popular:
+                    if popular_article['_id'] not in read_ids and popular_article['_id'] not in tmp_recommended_ids:
+                        articles.append(popular_article)
+                        if len(articles) == int(n_articles_2_rec):
+                            break
 
         article_titles = list(map(lambda x: x['title'], articles))
         print("Our model recommends the following articles:")
         print("-" * 50)
         for i in range(len(article_titles)):
-            print(i, article_titles[i])
+            print(i + 1, article_titles[i])
         print()
 
         recommended_ids = list(map(lambda x: x['_id'], articles))
