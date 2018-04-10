@@ -27,9 +27,15 @@ class VectorSpaceModel:
         self.tfidf_model = TfidfModel.load(path + '/tfidf_model.mod')
         self.tfidf_similarity = MatrixSimilarity.load(path + '/tfidf_sim.mod')
 
-    def query(self, query: list, n_results: int):
+    def query(self, query: list, threshold: float):
         query_corpus = self.dictionary.doc2bow(query)
         query_tfidf = self.tfidf_model[query_corpus]
         similarity = enumerate(self.tfidf_similarity[query_tfidf])
-        query_result = sorted(similarity, key=lambda kv: -kv[1])[:n_results]
-        return list(map(lambda x: x[0], query_result))
+        query_result = sorted(similarity, key=lambda kv: -kv[1])
+        result = []
+        for res in query_result:
+            if res[1] > threshold:
+                result.append(res)
+            else:
+                break
+        return result
