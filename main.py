@@ -23,13 +23,14 @@ if __name__ == '__main__':
 
     user_profile_iterator = db.test_user_profiles.find()
     n_test_articles = db.test_articles.find().count()
+    n_articles = db.articles.find().count()
 
     recall_list = []
     precision_list = []
     arhr_list = []
     fpr_list = []
 
-    n_predictions = 1000
+    n_predictions = 100
     for i in range(n_predictions):
         current_user = user_profile_iterator.next()["_id"]
         user_profile = create_user_profile(current_user)
@@ -50,7 +51,7 @@ if __name__ == '__main__':
         # print()
 
         start = time.time()
-        query_results = model.query(query=user_profile, threshold=1)
+        query_results = model.query(query=user_profile, threshold=0.5)
         if len(query_results) == 0:
             precision = 1
             recall = 0
@@ -68,7 +69,7 @@ if __name__ == '__main__':
             true_positives = len(set(recommended_ids).intersection(set(test_read_ids)))
             false_positives = len(recommended_ids) - true_positives
             false_negatives = len(test_read_ids) - true_positives
-            true_negatives = n_test_articles - (false_negatives + true_positives) - false_positives
+            true_negatives = n_articles - false_negatives - true_positives - false_positives
 
             false_positives_rate = false_positives / (false_positives + true_negatives)
             precision = true_positives / (true_positives + false_positives)
