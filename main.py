@@ -46,7 +46,7 @@ if __name__ == '__main__':
 
         query_results = model.query(query=user_profile, threshold=threshold)
         if len(query_results) > int(n_articles_2_rec):
-            query_results = query_results[:n_articles_2_rec]
+            query_results = query_results[:int(n_articles_2_rec)]
 
         results = list(map(lambda x: x[0], query_results))
         results = list(filter(lambda x: x not in read_ids, results))  # filters out already read articles
