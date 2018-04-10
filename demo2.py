@@ -1,4 +1,3 @@
-from pprint import pprint
 from model import VectorSpaceModel
 from mongo_queries import db, create_user_profile, get_n_most_popular
 import time
@@ -39,7 +38,7 @@ if __name__ == '__main__':
         print("Articles read by user:")
         print("-" * 50)
         for read_id in read_ids:
-            pprint(db.articles.find_one({"_id": read_id})['title'])
+            print(db.articles.find_one({"_id": read_id})['title'])
         print()
 
         test_read = db.test_user_profiles.find_one({"_id": current_user})["events"]
@@ -48,7 +47,7 @@ if __name__ == '__main__':
         print("Articles also read by user, NOT known by our model:")
         print("-" * 50)
         for read_id in test_read_ids:
-            pprint(db.articles.find_one({"_id": read_id})['title'])
+            print(db.articles.find_one({"_id": read_id})['title'])
         print()
 
         n_articles_2_rec = input("How many articles to recommend? ")
