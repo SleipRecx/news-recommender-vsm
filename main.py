@@ -115,3 +115,4 @@ if __name__ == '__main__':
     print("Global F-Measure:", global_f_measure)
     print("Global ARHR:", global_arhr)
     print("Global AUC", global_auc)
+    print("Total time:", time.time() - start)
