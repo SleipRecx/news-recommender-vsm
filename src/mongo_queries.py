@@ -26,3 +26,11 @@ def create_user_profile(user_id) -> list:
         for profile in article["profiles"]:
             profiles.append(profile["item"])
     return profiles
+
+
+def get_n_most_popular(n: int) -> list:
+    articles = []
+    for i in range(n):
+        id = db.most_popular.find({"_id":i}).next()["articleId"]
+        articles.append(db.articles.find({"_id": id}).next())
+    return articles
