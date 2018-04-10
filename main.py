@@ -5,9 +5,9 @@ from src.mongo_queries import db, create_user_profile, get_n_most_popular
 import time
 import os
 
-n_users = 100
+n_users = 10
 n_articles_2_rec = 10
-threshold = 0.25
+threshold = 0.01
 
 
 def get_articles_from_query_result(result):
@@ -45,12 +45,13 @@ if __name__ == '__main__':
         test_read_ids = list(map(lambda x: x['articleId'], test_read))
 
         query_results = model.query(query=user_profile, threshold=threshold)
+        if len(query_results) > int(n_articles_2_rec):
+            query_results = query_results[:n_articles_2_rec]
+
         results = list(map(lambda x: x[0], query_results))
         results = list(filter(lambda x: x not in read_ids, results))  # filters out already read articles
         articles = get_articles_from_query_result(results)
 
-        if len(articles) > int(n_articles_2_rec):
-            articles = articles[:int(n_articles_2_rec)]
         if len(articles) < int(n_articles_2_rec):
             n_missing = int(n_articles_2_rec) - len(articles) + len(read_ids)
             most_popular = get_n_most_popular(n_missing)
