@@ -1,5 +1,5 @@
-from model import VectorSpaceModel
-from mongo_queries import db, create_user_profile, get_n_most_popular
+from src.model import VectorSpaceModel
+from src.mongo_queries import db, create_user_profile, get_n_most_popular
 import time
 import os
 
@@ -52,17 +52,14 @@ if __name__ == '__main__':
 
         n_articles_2_rec = input("How many articles to recommend? ")
 
-        query_results = model.query(query=user_profile, threshold=0.01)
-
-        if n_articles_2_rec != 'n' and n_articles_2_rec != 'N':
-            if len(query_results) > int(n_articles_2_rec):
-                query_results = query_results[:int(n_articles_2_rec)]
-
+        query_results = model.query(query=user_profile, threshold=0.25)
         results = list(map(lambda x: x[0], query_results))
         results = list(filter(lambda x: x not in read_ids, results))  # filters out already read articles
         articles = get_articles_from_query_result(results)
 
         if n_articles_2_rec != 'n' and n_articles_2_rec != 'N':
+            if len(articles) > int(n_articles_2_rec):
+                articles = articles[:int(n_articles_2_rec)]
             if len(articles) < int(n_articles_2_rec):
                 n_missing = int(n_articles_2_rec) - len(articles) + len(read_ids)
                 most_popular = get_n_most_popular(n_missing)
@@ -84,9 +81,21 @@ if __name__ == '__main__':
         true_positives = len(set(recommended_ids).intersection(set(test_read_ids)))
         false_positives = len(recommended_ids) - true_positives
         false_negatives = len(test_read_ids) - true_positives
-        precision = true_positives / (true_positives + false_positives)
-        recall = true_positives / (true_positives + false_negatives)
-        f_measure = 2 * (precision * recall / (precision + recall))
+
+
+        try:
+            precision = true_positives / (true_positives + false_positives)
+        except ZeroDivisionError:
+            precision = 0
+        try:
+            recall = true_positives / (true_positives + false_negatives)
+        except ZeroDivisionError:
+            recall = 0
+        try:
+            f_measure = 2 * (precision * recall / (precision + recall))
+        except ZeroDivisionError:
+            f_measure = 0
+
         arhr = sum(
             list(map(lambda x: 0 if x not in recommended_ids else 1 / (recommended_ids.index(x) + 1), test_read_ids)))
 
